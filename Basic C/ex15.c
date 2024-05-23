@@ -19,7 +19,7 @@ void swap_ref(int *px, int *py){
 int main(){
 	int x=1, y=2;
 	swap_val(x,y);
-	printf("If we pass arguments by value no x is %d and y is %d\n",x,y);
+	printf("If we pass arguments by value now x is %d and y is %d\n",x,y);
 	swap_ref(&x,&y);
 	printf("If we pass arguments by reference now x is %d and y is %d\n",x,y);
 }
