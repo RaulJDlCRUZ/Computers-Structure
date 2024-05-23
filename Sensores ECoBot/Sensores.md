@@ -42,5 +42,28 @@ Sensores/actuadores empleados:
 
 El código resultante se encuentra en el reto [`detector_obstaculos_2`](/Sensores%20ECoBot/Retos%20propuestos/detector_obstaculos_2/src/main.cpp)
 
+## Examenes
+- El alumno dispondrá de **90 minutos** para la realización de la prueba.
+- La puntuación total de la prueba es de **1 punto** sobre la nota total de la asignatura.
+- El alumno solo podrá realizar la prueba en **el turno de laboratorio donde esté inscrito**.
+- La prueba se realizará de forma **individual**.
+- Queda completamente prohibido **emplear cualquier tipo de material** durante la realización de la prueba.
+- Cuando el alumno finalice la prueba, deberá levantar la mano. El profesor acudirá a su sitio y subirá delante de él el proyecto comprimido (fichero con el formato apellidos_nombre.zip) en una tarea para tal fin en Moodle.
+- **Durante la prueba, el alumno solo podrá tener abierto el Visual Studio Code y el visor de documentos**.
+### Simulacro de examen
+Este es un simulacro o enunciado de ejemplo subido a Moodle. La información completa se encuentra [aquí](/Sensores%20ECoBot/Examenes/Simulacro1/Simulacro1.md).
+### Examen ordinario
+El enunciado en cuestión se eliminó para evitar dispersión entre turnos de laboratorio, mas el código se rescató, accesible [aquí](/Sensores%20ECoBot/Examenes/MiExamen/).
 ## Otros proyectos
-### WIP
+### Lavender Town
+Código que reproduce por el Piezzo la famosa canción tétrica de Pokémon Rojo.
+Código de este proyecto [aquí](/Sensores%20ECoBot/Otros%20proyectos/lavender_town.cpp) (suelto).
+### Blacksigue
+Modificación del ejemplo de los infrarrojos pero el ECoBot avanzará si alguno de los sensores es 0.
+Código de este proyecto [aquí](/Sensores%20ECoBot/Otros%20proyectos/Blacksigue/src/main.cpp).
+### LDRIdea1
+Pequeño ejercicio que interactúa con diversos elementos del ECoBot en función del sensor LDR.
+Código de este proyecto [aquí](/Sensores%20ECoBot/Otros%20proyectos/LDRIdea1/src/main.cpp).
+### Servo180Prueba
+Pequeña prueba con los servos de rotación continua.
+Código de este proyecto [aquí](/Sensores%20ECoBot/Otros%20proyectos/Servo180Prueba/src/main.cpp).
