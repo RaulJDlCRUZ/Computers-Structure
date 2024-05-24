@@ -51,6 +51,7 @@ Establecida en 1947 y debe su nombre a la computadora Harvard Mark I basada en r
 |Ejecución secuencial de lectura de la memoria|Ejecución paralela de lectura de instrucciones y datos|
 
 # Demostrar que la plataforma Arduino Zero implementa una arquitectura Harvard
+> :warning: PREGUNTA 1 en Prueba de Laboratorio - Parte 2 de Ordinaria (0,5 puntos)
 
 Se va a emplear el código de ejemplo localizado [aquí](/Depuracion%20y%20Memoria/ejemplo_arquitectura_harvard/src/main.cpp)
 
@@ -187,11 +188,12 @@ Entonces, lo que se hará en este ejercicio es ejecutar paso a paso el código p
 
 ```console
 REGISTERS
-sp = 0x20007ff0
-sp = 0x20007fe8
-sp = 0x20007fd8
-sp = 0x20007fe8
-sp = 0x20007fd8
+    sp = 0x20007ff0
+    sp = 0x20007fe8
+    sp = 0x20007fd8
+    sp = 0x20007fe8
+    sp = 0x20007fd8
+    ...
 ```
 
 El comportamiento por cada iteración resulta muy interesante, ya que aparentemente el registro va para atrás y para alante (oscila entre `0x20007fe8` y `0x20007fd8`), junto con el código de depuración `wiring_digital.c`. Tras hacer el `while` (mucho tiempo), llega al código `main.cpp`, donde el registro SP se queda permanentemente en `0x20007ff0`.
@@ -202,3 +204,170 @@ Entonces, con esto podemos entender lo siguiente:
     - El puntero aumenta a valores más bajos (_o decrecientes_), pero el puntero se mantendrá en `0x20007ff0`
 
 Por ello, podemos decir que el **puntero de la pila avanza en posiciones descendientes, pese a que sus valores sean oscilantes dentro de "Stack"** (ver Arduino Memory Layout)
+
+# Trabajo autónomo en Lenguaje máquina en Arduino
+
+Para el caso, se empleará una versión del "Hola Mundo!" en bucle, que se puede encontrar [aquí](/Depuracion%20y%20Memoria/Lenguaje_Maquina_Hola/src/main.cpp)
+
+## Descomposición del programa en lenguaje máquina
+
+### setup.dbgasm (`void setup()`)
+
+```asm
+0x00002118: 10 b5           	push	{r4, lr}
+0x0000211a: 96 21           	movs	r1, #150	; 0x96
+0x0000211c: 89 01           	lsls	r1, r1, #6
+0x0000211e: 02 48           	ldr	r0, [pc, #8]	; (0x2128 <setup()+16>)
+0x00002120: 00 f0 8c f9     	bl	0x243c <Uart::begin(unsigned long)>
+0x00002124: 10 bd           	pop	{r4, pc}
+0x00002126: c0 46           	nop			; (mov r8, r8)
+0x00002128: ac 00           	lsls	r4, r5, #2
+0x0000212a: 00 20           	movs	r0, #0
+```
+
+### main.dbgasm (`main`)
+
+```asm
+0x00002ae0: 10 b5           	push	{r4, lr}
+0x00002ae2: 00 f0 e3 f8     	bl	0x2cac <init>
+0x00002ae6: 02 f0 99 f9     	bl	0x4e1c <__libc_init_array>
+0x00002aea: ff f7 f8 ff     	bl	0x2ade <initVariant()>
+0x00002aee: 01 20           	movs	r0, #1
+0x00002af0: ff f7 ca ff     	bl	0x2a88 <delay>
+0x00002af4: 08 4c           	ldr	r4, [pc, #32]	; (0x2b18 <main()+56>)
+0x00002af6: 20 00           	movs	r0, r4
+0x00002af8: 00 f0 2e fc     	bl	0x3358 <USBDeviceClass::init()>
+0x00002afc: 20 00           	movs	r0, r4
+0x00002afe: 00 f0 fb fc     	bl	0x34f8 <USBDeviceClass::attach()>
+0x00002b02: ff f7 09 fb     	bl	0x2118 <setup()>
+0x00002b06: ff f7 f9 fa     	bl	0x20fc <loop()>
+0x00002b0a: 04 4b           	ldr	r3, [pc, #16]	; (0x2b1c <main()+60>)
+0x00002b0c: 00 2b           	cmp	r3, #0
+0x00002b0e: fa d0           	beq.n	0x2b06 <main()+38>
+0x00002b10: 00 e0           	b.n	0x2b14 <main()+52>
+0x00002b12: 00 bf           	nop
+0x00002b14: f7 e7           	b.n	0x2b06 <main()+38>
+0x00002b16: c0 46           	nop			; (mov r8, r8)
+0x00002b18: 7c 02           	lsls	r4, r7, #9
+0x00002b1a: 00 20           	movs	r0, #0
+0x00002b1c: 00 00           	movs	r0, r0
+0x00002b1e: 00 00           	movs	r0, r0
+```
+
+### loop.dbgasm (`void loop()`)
+
+```asm
+0x000020fc: 10 b5           	push	{r4, lr}
+0x000020fe: 04 49           	ldr	r1, [pc, #16]	; (0x2110 <loop()+20>)
+0x00002100: 04 48           	ldr	r0, [pc, #16]	; (0x2114 <loop()+24>)
+0x00002102: 00 f0 22 fc     	bl	0x294a <arduino::Print::print(char const*)>
+0x00002106: fa 20           	movs	r0, #250    ; 0xfa
+0x00002108: 80 00           	lsls	r0, r0, #2
+0x0000210a: 00 f0 bd fc     	bl	0x2a88 <delay>
+0x0000210e: 10 bd           	pop	{r4, pc}
+0x00002110: 6c 50           	str	r4, [r5, r1]
+0x00002112: 00 00           	movs	r0, r0
+0x00002114: ac 00           	lsls	r4, r5, #2
+0x00002116: 00 20           	movs	r0, #0
+```
+
+## Identifica una instrucción que utilice un modo de direccionamiento relativo al contador de programa
+
+Las instrucciones de direccionamiento relativo son aquellas con la etiqueta `ldr`:
+
+|`setup`   |`main`    |`loop`    |
+|----------|----------|----------|
+|0x0000211e|0x00002af4|0x000020fe|
+|          |0x00002b0a|0x00002100|
+
+> Ejemplo visual: `ldr	r1, [pc, #16]	; (0x2110 <loop()+20>)`
+---
+`LDR <Rt>, [PC, #immed8];`
+
+Word read: Lee un dato en memoria y lo carga en un registro. Utiliza un direccionamiento con desplazamiento. Utiliza un direccionamiento con desplazamiento relativo al contador de programa. Es decir: se trata una instrucción de **carga a un registro**, más concretamente, carga un valor en el registro `r1`. El segundo operando de esta instrucción se trata de un operando relativo al contador de programa, con un desplazamiento de 16 bits.
+
+## Siguiendo la traza de ejecución del programa, identifica una instrucción en ensamblador que se corresponda con una bifurcación condicional y coméntala
+
+> :warning: PREGUNTA 2 en Prueba de Laboratorio - Parte 2 de Ordinaria (0,5 puntos)
+
+Un ejemplo de bifurcación condicional se encuentra en el código `main.dbgasm`, concretamente la instrucción `0x00002b0e`:
+
+```asm
+0x00002b0e: fa d0           	beq.n	0x2b06 <main()+38>
+```
+
+Esta instrucción quiere decir que si el bit N está activado se salta a la dirección de memoria `0x2b06`...de acuerdo al manual de Estructura de computadores, con ISBN = 978-84-9044-411-5.
+
+Sin embargo, también podría ser que el `.n` simplemente se trata de un sufijo de 16-bits Thumb ("narrow"), lo cual quiere decir que _es una versión de tamaño corto o compacta de la instrucción_ (palabra de 16 bits), común en arquitecturas compactas ARM, como la es la del Arduino Zero. ¿Y de qué instrucción es la versión compacta? De **branch if-equal**, es decir, el flujo del programa saltará a una dirección específica si dos registros son _iguales_.
+
+Esto último tiene relación con la instrucción inmediatamente anterior:
+
+```asm
+0x00002b0c: 00 2b           	cmp	r3, #0
+```
+
+Esta instrucción compara el contenido del registro `r3` con el valor inmediato `0`. El resultado de esta comparación se almacena por medio de flags en el procesador. La más interesante para el caso es (Z): "indicador de cero". Esta se activa si `r3` _es igual_ a `0`.
+
+Entonces, `beq.n` comprueba si esta flag se activó, para decidir si saltar o no a la dirección de memoria en cuestión.
+
+**CONCLUSIÓN:**`cmp` compara el valor de `r3` con `0`, y si resulta que son _iguales_(`beq.n`), entonces salta a la dirección `0x2b06`, es decir, a `<main()+38>`. **Esto es un salto condicional en toda regla**.
+
+## Identifica una instrucción que utilice un operando con direccionamiento relativo al stack pointer (SP)
+
+**En el código ensamblador obtenido no se ha localizado un operando del estilo**, sin embargo, un ejemplo de este se sugiere de la siguiente forma:
+
+```asm
+0x2748 ldr r3, [sp, #4]
+```
+
+Donde, en lugar de encontrarse el Contador de Programa (PC), se considera el Stack Pointer (SP)
+
+## Identifica un fragmento de código ensamblador que se corresponda con un bucle y analízalo
+
+Para este ejercicio, el código empleado será diferente. Será un incrementador de registro como vimos anteriormente. El código empleado se encuentra [aquí](/Depuracion%20y%20Memoria/Lenguaje_Maquina_Bucle/src/main.cpp)
+
+### Traducción a lenguaje máquina
+
+```asm
+0x000020fc: 00 23           	movs	r3, #0
+0x000020fe: 09 2b           	cmp	r3, #9
+0x00002100: 01 dc           	bgt.n	0x2106 <loop()+10>
+0x00002102: 01 33           	adds	r3, #1
+0x00002104: fb e7           	b.n	0x20fe <loop()+2>
+0x00002106: 70 47           	bx	lr
+```
+### Análisis
+```asm
+0x000020fc: 00 23           	movs	r3, #0				
+```
+
+Inicializa la variable `i`. Mueve un registro a otro registro y actualiza el APSR o registro de estado al mismo tiempo.
+
+```asm
+0x000020fe: 09 2b           	cmp	r3, #9				
+```
+
+Compara la variable con el valor 9
+```asm
+0x00002100: 01 dc           	bgt.n	0x2106 <loop()+10>	
+```
+
+Se salta a `0x00002106 <loop()+10>` si dicha variable es mayor ("greater than") que 9, de ser así se sale del bucle (`0x2106`: última instrucción). De nuevo, el sufijo `.n` significa palabra de 16 bits. NO ES RELEVANTE.
+
+```asm
+0x00002102: 01 33           	adds	r3, #1				
+```
+
+Incrementa en 1 la variable `i`: `ADDS <Rd>, <Rn>, #immed3` Suma un valor inmediato a un registro.
+
+```asm
+0x00002104: fb e7           	b.n	0x20fe <loop()+2>
+```
+
+Vuelve sí o sí al principio del bucle `for` (label `20fe`)
+
+```asm
+0x00002106: 70 47           	bx	lr				
+```
+
+Se sale del `loop`. `BX` $\rightarrow$ Bifurcación a una dirección especificada en un registro cambiando el estado del procesador dependiendo del bit 0 del registro.
